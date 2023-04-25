@@ -1,0 +1,102 @@
+syms theta1 theta2 theta3 theta4 l4 d1 z1 z2 th alp a b
+    T = [cos(th) -sin(th)*cos(alp) sin(th)*sin(alp) a*cos(th); 
+        sin(th) cos(th)*cos(alp) -cos(th)*sin(alp) sin(th)*a; 
+        0 sin(alp) cos(alp) b; 
+        0 0 0 1];
+
+
+T1 = (eval(subs(T, [a, b, th, alp], [0, 0, theta1, pi/2])));
+T2 = (eval(subs(T, [a, b, th, alp], [3, 1, theta2, 0])));
+T3 = (eval(subs(T, [a, b, th, alp], [3, 0, theta3, 0])));
+
+
+% T4 = (eval(subs(T, [a, b, th, alp], [d1, 0, pi/6, 0])));
+
+T_EA = T1*T2*T3
+
+
+initial_config = eval(subs(T_EA, [ theta1, theta2, theta3], deg2rad([0, -131.81, 263.62])))
+ex = T_EA(1,4)^2 + T_EA(2,4)^2 + T_EA(3,4)^2;
+ex = simplify(expand(ex));
+
+% ------ END EFFECTOR INPUT -----------
+Px = -3;
+Py = -1;
+Pz = 0;
+%--------------------------------------
+
+% ------ GEOMETRY INPUT ---------------
+l1 = 1; 
+l2 = 3;
+l3 = 3;
+% -------------------------------
+
+
+theta_sol = zeros(3, 8);
+c = 1;
+theta3_sol = [0, 0];
+
+theta3_sol(1) = acos((Px^2 + Py^2 + Pz^2 - l1^2 - l2^2 - l3^2)/(2*l2*l3));
+theta3_sol(2) = 2*pi - theta3_sol(1);
+
+
+
+for theta3_sol_1 = [theta_sol(1), theta3_sol(2)]
+    Ax = T_EA(1, 4);
+    Ay = T_EA(2, 4);
+    Az = T_EA(3, 4);
+    
+    Ax = subs(Ax, [cos(theta1), sin(theta1), cos(theta2), sin(theta2), theta3], [(1-z1.^2)/(1 + z1.^2), 2*z1/(1 + z1.^2), (1-z2.^2)/(1 + z2.^2), 2*z2/(1 + z2.^2), theta3_sol_1]);
+    Ay = subs(Ay, [cos(theta1), sin(theta1), cos(theta2), sin(theta2), theta3], [(1-z1.^2)/(1 + z1.^2), 2*z1/(1 + z1.^2), (1-z2.^2)/(1 + z2.^2), 2*z2/(1 + z2.^2), theta3_sol_1]);
+   
+    Eqn = [Ax == Px; Ay == Py];
+    ex1 = eliminate(Eqn, z2);
+    ex1 = ex1(1);
+    p1 = sym2poly(ex1);
+    r1 = roots(p1);
+
+    Eqn = [Ax == Px; Ay == Py];
+    ex1 = eliminate(Eqn, z1);
+    ex1 = ex1(1);
+    p1 = sym2poly(ex1);
+    r2 = roots(p1);
+
+    [r2, n] = realTheta(r2)
+    [r1, m] = realTheta(r1);
+
+
+    theta2_sol = 2*atan(r2);
+    theta1_sol = 2*atan(r1);
+    
+    
+    
+    for i = 1:m
+        for j = 1:n
+            Ax = round(eval(subs(T_EA(1, 4), [theta1, theta2, theta3], [theta1_sol(i), theta2_sol(j), theta3_sol_1])), 3);
+            Ay = round(eval(subs(T_EA(2, 4), [theta1, theta2, theta3], [theta1_sol(i), theta2_sol(j), theta3_sol_1])), 3);
+            Az = round(eval(subs(T_EA(3, 4), [theta1, theta2, theta3], [theta1_sol(i), theta2_sol(j), theta3_sol_1])), 3);
+            
+            if [Ax, Ay, Az] == [Px, Py, Pz]
+                theta_sol(: ,c) = [theta1_sol(i), theta2_sol(j), theta3_sol_1]';
+                c = c + 1;
+            end
+    
+        end
+    end
+
+end
+
+c = c-1
+theta_sol = theta_sol(:, 1:c);
+rad2deg(theta_sol)
+% f1 = @(Px, Py, Pz) (Px.^2 + Py.^2 + Pz.^2 - l1^2 - l2^2 - l3^2)/(2*l2*l3) - 1;
+% f2 = @(Px, Py, Pz) (Px.^2 + Py.^2 + Pz.^2 - l1^2 - l2^2 - l3^2)/(2*l2*l3) + 1;
+% interval = [-30 30 -30 30 -30 30];
+% fimplicit3(f1, interval);
+% hold on
+% fimplicit3(f2, interval)
+% 
+% xlim([-7.06 7.06])
+% ylim([-7.1 7.1])
+% zlim([-7.06 7.06])
+% view([0, 0])

@@ -1,0 +1,140 @@
+syms theta1 theta2 theta3
+
+ti = 0;
+tf = 1;
+
+theta_i = [0, -131.8109, 263.6206];
+theta_f = [0, -140.23, 260];
+
+
+
+a2 = (1/tf^2)*(3*(theta_f(2) - theta_i(2)));
+a3 = (1/tf^3)*(2*(theta_i(2) - theta_f(2)));
+
+t = 0:0.05:tf;
+
+theta_2 = theta_i(2) + a2*t.^2 + a3*t.^3;
+theta_2_control = theta_2;
+
+a2 = (1/tf^2)*(3*(theta_f(3) - theta_i(3)));
+a3 = (1/tf^3)*(2*(theta_i(3) - theta_f(3)));
+
+theta_3 = theta_i(3) + a2*t.^2 + a3*t.^3;
+% 
+% figure(1)
+% plot(t, theta_2);
+
+Ax = sin(theta1) + 3*cos(theta1)*cos(theta2) - 3*cos(theta1)*sin(theta2)*sin(theta3) + 3*cos(theta1)*cos(theta2)*cos(theta3);
+Px_1 = zeros(1, 21);
+for i = 1:21
+    Px_1(i) = eval(subs(Ax, [theta1, theta2, theta3], deg2rad([0, theta_2(i), theta_3(i)])));
+end
+
+Px_1;
+% plot(t, Px_1);
+ti = 0;
+tf = 1;
+
+theta_i = [0, -140.23, 260];
+theta_f = [0, -148.6485, 267.2908];
+
+
+t = 0:0.05:1;
+
+a2 = (1/tf^2)*(3*(theta_f(2) - theta_i(2)));
+a3 = (1/tf^3)*(2*(theta_i(2) - theta_f(2)));
+
+theta_2 = theta_i(2) + a2*t.^2 + a3*t.^3;
+theta_2_control = [theta_2_control(1:20), theta_2];
+
+
+a2 = (1/tf^2)*(3*(theta_f(3) - theta_i(3)));
+a3 = (1/tf^3)*(2*(theta_i(3) - theta_f(3)));
+
+theta_3 = theta_i(3) + a2*t.^2 + a3*t.^3;
+Px_2 = zeros(1, 21);
+for i = 1:21
+    Px_2(i) = eval(subs(Ax, [theta1, theta2, theta3], deg2rad([0, theta_2(i), theta_3(i)])));
+end
+Px_2
+
+% plot(t, Px_2)
+Px = [Px_1(1:20), Px_2];
+t = 0:0.05:2;
+plot(t, Px)
+
+xlim([0 2])
+ylim([-4.000 -3.752])
+t = 0:0.05:2;
+
+tf = 2;
+
+theta_i = [0, -148.6485, 267.2908];
+theta_f = [0, -118.642, 267.2908];
+
+a2 = (1/tf^2)*(3*(theta_f(2) - theta_i(2)));
+a3 = (1/tf^3)*(2*(theta_i(2) - theta_f(2)));
+
+theta_2 = [theta_i(2) + a2*t.^2 + a3*t.^3];
+theta_2_control_inital = [theta_2_control(1:40), theta_2];
+plot(t, theta_2);
+t = 0:0.05:4;
+plot(t, theta_2_control_inital)
+
+
+Repetitive trajectory
+tf = 1;
+
+theta_i = [0, -118.642, 267.2908];
+theta_f = [0, -120, 240];
+
+a2 = (1/tf^2)*(3*(theta_f(2) - theta_i(2)));
+a3 = (1/tf^3)*(2*(theta_i(2) - theta_f(2)));
+
+t = 0:0.05:1;
+
+theta_2 = theta_i(2) + a2*t.^2 + a3*t.^3;
+theta_2_control = theta_2;
+
+theta_i = [0, -120, 240];
+theta_f = [0, -148.6485, 267.2908];
+
+a2 = (1/tf^2)*(3*(theta_f(2) - theta_i(2)));
+a3 = (1/tf^3)*(2*(theta_i(2) - theta_f(2)));
+
+theta_2 = theta_i(2) + a2*t.^2 + a3*t.^3;
+theta_2_control = [theta_2_control(1:20), theta_2];
+
+t = 0:0.05:2;
+t = 0:0.05:2;
+
+tf = 2;
+
+theta_i = [0, -148.6485, 267.2908];
+theta_f = [0, -118.642, 267.2908];
+
+a2 = (1/tf^2)*(3*(theta_f(2) - theta_i(2)));
+a3 = (1/tf^3)*(2*(theta_i(2) - theta_f(2)));
+
+theta_2 = [theta_i(2) + a2*t.^2 + a3*t.^3];
+theta_2_control = [theta_2_control(1:40), theta_2];
+
+
+t = 0:0.05:4;
+plot(t, theta_2_control);
+theta_2_control = [theta_2_control(1:80), theta_2_control];
+theta_2_control = [theta_2_control(1:160), theta_2_control];
+t = 0:0.05:16;
+plot(t, theta_2_control)
+
+xlim([0.0 16.0])
+% ylim([-150.0 -115.0])
+ylim([-200.0 -100.0])
+actual_theta_control = [theta_2_control_inital(1:80), theta_2_control];
+t = 0:0.05:20;
+plot(t, actual_theta_control)
+
+xlim([0.0 20.0])
+ylim([-200.0 -100.0])
+
+
